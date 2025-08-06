@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparador de Listas de Nomes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .results-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        .results-container::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .results-container::-webkit-scrollbar-thumb {
+            background-color: #3b82f6;
+            border-radius: 20px;
+            border: 3px solid #f1f5f9;
+        }
+        #results-section {
+            display: none; /* Resultados ficam ocultos inicialmente */
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-7xl">
+
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-blue-600">Comparador de Listas de Nomes</h1>
+            <p class="mt-2 text-slate-600">Cole os nomes de duas planilhas para encontrar correspondências e divergências.</p>
+        </header>
+
+        <main class="bg-white p-6 rounded-2xl shadow-lg">
+            <!-- Áreas de Inserção de Nomes -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label for="name-list-1" class="block text-lg font-semibold mb-2 text-slate-700">Lista de Nomes 1</label>
+                    <textarea id="name-list-1" rows="10" class="w-full p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200" placeholder="Cole os nomes da primeira planilha aqui..."></textarea>
+                </div>
+                <div>
+                    <label for="name-list-2" class="block text-lg font-semibold mb-2 text-slate-700">Lista de Nomes 2</label>
+                    <textarea id="name-list-2" rows="10" class="w-full p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200" placeholder="Cole os nomes da segunda planilha aqui..."></textarea>
+                </div>
+            </div>
+
+            <!-- Opções de Análise -->
+            <div class="mb-6 p-4 bg-slate-100 rounded-lg">
+                <h3 class="text-lg font-semibold mb-3 text-slate-800">Opções de Análise</h3>
+                <div class="space-y-4">
+                    <div class="flex items-center">
+                        <input id="flexible-check" type="checkbox" checked class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        <label for="flexible-check" class="ml-2 block text-sm font-medium text-slate-700">
+                            Ignorar maiúsculas/minúsculas e acentos
+                        </label>
+                    </div>
+                    <div id="similarity-container" class="pt-2">
+                        <label for="similarity-threshold" class="block text-sm font-medium text-slate-700">Nível de similaridade para correspondência: <span id="similarity-value" class="font-bold">85</span>%</label>
+                        <input id="similarity-threshold" type="range" min="50" max="100" value="85" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex justify-center">
+                 <button id="check-button" class="w-full sm:w-auto bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-transform transform hover:scale-105 text-lg">
+                    Comparar Listas
+                </button>
+            </div>
+
+            <!-- Seção de Resultados -->
+            <div id="results-section" class="mt-8 pt-6 border-t border-slate-200">
+                <h2 class="text-2xl font-bold text-center mb-4 text-slate-800">Resultados da Comparação</h2>
+                
+                <!-- Resumo Quantitativo -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center mb-8 p-4 bg-slate-100 rounded-lg">
+                    <div>
+                        <p class="text-sm text-slate-600">Total na Lista 1</p>
+                        <p id="total1-count" class="text-2xl font-bold text-blue-600">0</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-slate-600">Total na Lista 2</p>
+                        <p id="total2-count" class="text-2xl font-bold text-purple-600">0</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-slate-600">Diferença</p>
+                        <p id="difference-count" class="text-2xl font-bold text-red-600">0</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Nomes Correspondentes -->
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <h3 class="text-xl font-semibold mb-3 text-blue-700">Nomes Correspondentes (<span id="matches-count">0</span>)</h3>
+                        <div id="matches-list" class="results-container h-80 overflow-y-auto">
+                            <p class="text-slate-500">Nenhuma correspondência encontrada.</p>
+                        </div>
+                    </div>
+
+                    <!-- Nomes Apenas na Lista 1 -->
+                    <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                        <h3 class="text-xl font-semibold mb-3 text-orange-700">Nomes Exclusivos da Lista 1 (<span id="unmatched1-count">0</span>)</h3>
+                        <div id="unmatched1-list" class="results-container h-80 overflow-y-auto">
+                             <p class="text-slate-500">Nenhum nome exclusivo encontrado.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Nomes Apenas na Lista 2 -->
+                    <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                        <h3 class="text-xl font-semibold mb-3 text-purple-700">Nomes Exclusivos da Lista 2 (<span id="unmatched2-count">0</span>)</h3>
+                        <div id="unmatched2-list" class="results-container h-80 overflow-y-auto">
+                             <p class="text-slate-500">Nenhum nome exclusivo encontrado.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+    </div>
+
+    <script>
+        // --- FUNÇÕES DE LÓGICA ---
+
+        function normalizeName(name) {
+            if (typeof name !== 'string') return '';
+            return name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        }
+
+        function levenshteinDistance(a, b) {
+            const matrix = Array(b.length + 1).fill(null).map(() => Array(a.length + 1).fill(null));
+            for (let i = 0; i <= a.length; i += 1) { matrix[0][i] = i; }
+            for (let j = 0; j <= b.length; j += 1) { matrix[j][0] = j; }
+            for (let j = 1; j <= b.length; j += 1) {
+                for (let i = 1; i <= a.length; i += 1) {
+                    const indicator = a[i - 1] === b[j - 1] ? 0 : 1;
+                    matrix[j][i] = Math.min(
+                        matrix[j][i - 1] + 1,
+                        matrix[j - 1][i] + 1,
+                        matrix[j - 1][i - 1] + indicator,
+                    );
+                }
+            }
+            return matrix[b.length][a.length];
+        }
+
+        // --- FUNÇÕES DE UI ---
+
+        function displayResults(matches, unmatched1, unmatched2, total1, total2) {
+            const ui = {
+                matchesList: document.getElementById('matches-list'),
+                unmatched1List: document.getElementById('unmatched1-list'),
+                unmatched2List: document.getElementById('unmatched2-list'),
+                matchesCount: document.getElementById('matches-count'),
+                unmatched1Count: document.getElementById('unmatched1-count'),
+                unmatched2Count: document.getElementById('unmatched2-count'),
+                total1Count: document.getElementById('total1-count'),
+                total2Count: document.getElementById('total2-count'),
+                differenceCount: document.getElementById('difference-count'),
+                resultsSection: document.getElementById('results-section'),
+            };
+
+            // Mostra a seção de resultados
+            ui.resultsSection.style.display = 'block';
+
+            // Limpa listas anteriores
+            ui.matchesList.innerHTML = '';
+            ui.unmatched1List.innerHTML = '';
+            ui.unmatched2List.innerHTML = '';
+
+            // Exibe Nomes Correspondentes
+            if (matches.length > 0) {
+                const ul = document.createElement('ul');
+                ul.className = 'space-y-3';
+                matches.forEach(match => {
+                    const li = document.createElement('li');
+                    li.className = 'text-slate-800 bg-white p-3 rounded-md shadow-sm text-sm';
+                    li.innerHTML = `
+                        <span>${match.name1}</span><br>
+                        <span class="text-slate-500">↔ ${match.name2}</span><br>
+                        <span class="font-bold text-blue-600">Similaridade: ${match.similarity}%</span>
+                    `;
+                    ul.appendChild(li);
+                });
+                ui.matchesList.appendChild(ul);
+            } else {
+                ui.matchesList.innerHTML = '<p class="text-slate-500">Nenhuma correspondência encontrada.</p>';
+            }
+
+            // Exibe Nomes Apenas na Lista 1
+            if (unmatched1.length > 0) {
+                const ul = document.createElement('ul');
+                ul.className = 'space-y-2';
+                unmatched1.forEach(name => {
+                    const li = document.createElement('li');
+                    li.className = 'text-slate-800 bg-white p-2 rounded-md shadow-sm text-sm';
+                    li.textContent = name;
+                    ul.appendChild(li);
+                });
+                ui.unmatched1List.appendChild(ul);
+            } else {
+                ui.unmatched1List.innerHTML = '<p class="text-slate-500">Nenhum nome exclusivo encontrado.</p>';
+            }
+            
+            // Exibe Nomes Apenas na Lista 2
+            if (unmatched2.length > 0) {
+                const ul = document.createElement('ul');
+                ul.className = 'space-y-2';
+                unmatched2.forEach(name => {
+                    const li = document.createElement('li');
+                    li.className = 'text-slate-800 bg-white p-2 rounded-md shadow-sm text-sm';
+                    li.textContent = name;
+                    ul.appendChild(li);
+                });
+                ui.unmatched2List.appendChild(ul);
+            } else {
+                ui.unmatched2List.innerHTML = '<p class="text-slate-500">Nenhum nome exclusivo encontrado.</p>';
+            }
+
+            // Atualiza contadores
+            ui.matchesCount.textContent = matches.length;
+            ui.unmatched1Count.textContent = unmatched1.length;
+            ui.unmatched2Count.textContent = unmatched2.length;
+            ui.total1Count.textContent = total1;
+            ui.total2Count.textContent = total2;
+            ui.differenceCount.textContent = Math.abs(total1 - total2);
+        }
+
+        // --- LÓGICA PRINCIPAL ---
+
+        function runAnalysis() {
+            const isFlexible = document.getElementById('flexible-check').checked;
+            const threshold = document.getElementById('similarity-threshold').value / 100;
+            
+            const getNames = (id) => document.getElementById(id).value.split('\n').map(n => n.trim()).filter(Boolean);
+            
+            const originalNames1 = getNames('name-list-1');
+            const originalNames2 = getNames('name-list-2');
+
+            const total1 = originalNames1.length;
+            const total2 = originalNames2.length;
+
+            if (total1 === 0 && total2 === 0) {
+                displayResults([], [], [], 0, 0);
+                return;
+            }
+
+            const list1 = originalNames1.map(name => ({ original: name, processed: isFlexible ? normalizeName(name) : name }));
+            const list2 = originalNames2.map(name => ({ original: name, processed: isFlexible ? normalizeName(name) : name }));
+
+            const matches = [];
+            const matchedInList2 = new Set();
+
+            for (const item1 of list1) {
+                let bestMatch = null;
+                let highestSimilarity = -1;
+
+                for (let i = 0; i < list2.length; i++) {
+                    if (matchedInList2.has(i)) continue;
+
+                    const item2 = list2[i];
+                    const distance = levenshteinDistance(item1.processed, item2.processed);
+                    const similarity = 1 - distance / Math.max(item1.processed.length, item2.processed.length);
+
+                    if (similarity > highestSimilarity) {
+                        highestSimilarity = similarity;
+                        bestMatch = { ...item2, index: i };
+                    }
+                }
+
+                if (bestMatch && highestSimilarity >= threshold) {
+                    matches.push({
+                        name1: item1.original,
+                        name2: bestMatch.original,
+                        similarity: (highestSimilarity * 100).toFixed(0)
+                    });
+                    matchedInList2.add(bestMatch.index);
+                }
+            }
+
+            const matchedInList1Originals = new Set(matches.map(m => m.name1));
+            const matchedInList2Originals = new Set(matches.map(m => m.name2));
+
+            const unmatched1 = originalNames1.filter(name => !matchedInList1Originals.has(name));
+            const unmatched2 = originalNames2.filter(name => !matchedInList2Originals.has(name));
+            
+            matches.sort((a, b) => b.similarity - a.similarity);
+            unmatched1.sort((a, b) => a.localeCompare(b));
+            unmatched2.sort((a, b) => a.localeCompare(b));
+
+            displayResults(matches, unmatched1, unmatched2, total1, total2);
+        }
+
+        // --- EVENT LISTENERS ---
+        document.getElementById('check-button').addEventListener('click', runAnalysis);
+
+        const similaritySlider = document.getElementById('similarity-threshold');
+        const similarityValue = document.getElementById('similarity-value');
+        similaritySlider.addEventListener('input', () => {
+            similarityValue.textContent = similaritySlider.value;
+        });
+    </script>
+
+</body>
+</html>
