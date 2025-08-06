@@ -77,21 +77,14 @@
             <div id="results-section" class="mt-8 pt-6 border-t border-slate-200">
                 <h2 class="text-2xl font-bold text-center mb-4 text-slate-800">Resultados da Comparação</h2>
                 
-                <!-- Resumo Quantitativo -->
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center mb-8 p-4 bg-slate-100 rounded-lg">
-                    <div>
-                        <p class="text-sm text-slate-600">Total na Lista 1</p>
-                        <p id="total1-count" class="text-2xl font-bold text-blue-600">0</p>
-                    </div>
-                    <div>
-                        <p class="text-sm text-slate-600">Total na Lista 2</p>
-                        <p id="total2-count" class="text-2xl font-bold text-purple-600">0</p>
-                    </div>
-                    <div>
-                        <p class="text-sm text-slate-600">Diferença</p>
-                        <p id="difference-count" class="text-2xl font-bold text-red-600">0</p>
-                    </div>
+                <!-- Novo Resumo Detalhado -->
+                <div id="analysis-summary" class="text-center mb-8 p-4 bg-slate-100 rounded-lg space-y-1">
+                    <p>A análise encontrou <strong id="summary-matches" class="text-blue-600">0</strong> nomes correspondentes.</p>
+                    <p><strong id="summary-unmatched1" class="text-orange-600">0</strong> nomes existem apenas na <strong>Lista 1</strong>.</p>
+                    <p><strong id="summary-unmatched2" class="text-purple-600">0</strong> nomes existem apenas na <strong>Lista 2</strong>.</p>
+                    <p class="mt-2 pt-2 border-t border-slate-300 font-semibold">A diferença de <strong id="summary-difference" class="text-red-600">0</strong> no total de nomes entre as listas é composta por estes nomes exclusivos, listados abaixo.</p>
                 </div>
+
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <!-- Nomes Correspondentes -->
@@ -104,7 +97,7 @@
 
                     <!-- Nomes Apenas na Lista 1 -->
                     <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                        <h3 class="text-xl font-semibold mb-3 text-orange-700">Nomes Exclusivos da Lista 1 (<span id="unmatched1-count">0</span>)</h3>
+                        <h3 class="text-xl font-semibold mb-3 text-orange-700">Exclusivos da Lista 1 (<span id="unmatched1-count">0</span>)</h3>
                         <div id="unmatched1-list" class="results-container h-80 overflow-y-auto">
                              <p class="text-slate-500">Nenhum nome exclusivo encontrado.</p>
                         </div>
@@ -112,7 +105,7 @@
                     
                     <!-- Nomes Apenas na Lista 2 -->
                     <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                        <h3 class="text-xl font-semibold mb-3 text-purple-700">Nomes Exclusivos da Lista 2 (<span id="unmatched2-count">0</span>)</h3>
+                        <h3 class="text-xl font-semibold mb-3 text-purple-700">Exclusivos da Lista 2 (<span id="unmatched2-count">0</span>)</h3>
                         <div id="unmatched2-list" class="results-container h-80 overflow-y-auto">
                              <p class="text-slate-500">Nenhum nome exclusivo encontrado.</p>
                         </div>
@@ -158,9 +151,10 @@
                 matchesCount: document.getElementById('matches-count'),
                 unmatched1Count: document.getElementById('unmatched1-count'),
                 unmatched2Count: document.getElementById('unmatched2-count'),
-                total1Count: document.getElementById('total1-count'),
-                total2Count: document.getElementById('total2-count'),
-                differenceCount: document.getElementById('difference-count'),
+                summaryMatches: document.getElementById('summary-matches'),
+                summaryUnmatched1: document.getElementById('summary-unmatched1'),
+                summaryUnmatched2: document.getElementById('summary-unmatched2'),
+                summaryDifference: document.getElementById('summary-difference'),
                 resultsSection: document.getElementById('results-section'),
             };
 
@@ -221,13 +215,16 @@
                 ui.unmatched2List.innerHTML = '<p class="text-slate-500">Nenhum nome exclusivo encontrado.</p>';
             }
 
-            // Atualiza contadores
+            // Atualiza contadores dos títulos das colunas
             ui.matchesCount.textContent = matches.length;
             ui.unmatched1Count.textContent = unmatched1.length;
             ui.unmatched2Count.textContent = unmatched2.length;
-            ui.total1Count.textContent = total1;
-            ui.total2Count.textContent = total2;
-            ui.differenceCount.textContent = Math.abs(total1 - total2);
+            
+            // Atualiza contadores do novo painel de resumo
+            ui.summaryMatches.textContent = matches.length;
+            ui.summaryUnmatched1.textContent = unmatched1.length;
+            ui.summaryUnmatched2.textContent = unmatched2.length;
+            ui.summaryDifference.textContent = Math.abs(total1 - total2);
         }
 
         // --- LÓGICA PRINCIPAL ---
@@ -307,3 +304,8 @@
 
 </body>
 </html>
+
+
+</body>
+</html>
+
